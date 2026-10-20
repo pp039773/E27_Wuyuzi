@@ -165,14 +165,14 @@ input[type=range]{width:100%;accent-color:var(--pri)}
 .bmc .kp{grid-column:span 2;grid-row:span 2}.bmc .ka{grid-column:span 2}.bmc .kr{grid-column:span 2}.bmc .vp{grid-column:span 2;grid-row:span 2;background:var(--ps)}
 .bmc .cr{grid-column:span 2}.bmc .ch{grid-column:span 2}.bmc .cs{grid-column:span 2;grid-row:span 2}.bmc .cost{grid-column:span 5}.bmc .rev{grid-column:span 5}
 @media(max-width:860px){.bmc{grid-template-columns:1fr 1fr}.bmc>div{grid-column:auto!important;grid-row:auto!important}}
-.vpc{display:grid;grid-template-columns:minmax(0,1.2fr) 70px minmax(0,1fr);gap:10px;align-items:center}
+.vpc{display:grid;grid-template-columns:minmax(0,1.2fr) 132px minmax(0,1fr);gap:10px;align-items:center}
 @media(max-width:860px){.vpc{grid-template-columns:1fr}}
 .vm{border:2px solid var(--pri);border-radius:8px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;min-height:260px;background:var(--s)}
 .vm>div{padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .vm .ps{grid-row:1/3;border-right:2px solid var(--pri);background:color-mix(in srgb,var(--c-SV) 7%,var(--s))}
 .vm .gc{border-bottom:2px solid var(--pri)}
 .vm h5{font-size:11.5px;color:var(--pri);letter-spacing:.06em}
-.fit{width:62px;height:62px;border-radius:50%;background:var(--bad);color:#fff;font-weight:700;display:grid;place-items:center;margin:auto;font-size:16px}
+.fitwrap{display:flex;align-items:center;justify-content:center;gap:2px}.fa{display:flex}.fa.a2 svg{transform:scaleX(-1)}.fit{flex:none;width:56px;height:56px;border-radius:50%;background:var(--bad);color:#fff;font-weight:700;display:grid;place-items:center;margin:auto;font-size:16px}
 .vpr{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12.5px}
 .sb{display:grid;grid-template-columns:96px repeat(5,minmax(150px,1fr));min-width:860px;font-size:13px;border:1px solid var(--ln);border-radius:12px;overflow:hidden;background:var(--s)}
 .sb>div{padding:8px 10px;border-bottom:1px solid var(--ln);border-right:1px solid var(--ln);min-width:0}
@@ -308,6 +308,8 @@ nav.tabs button[aria-selected=true]{background:var(--segon);color:var(--segontx)
 .ep.gn{--ec:var(--c-GN);border-color:color-mix(in srgb,var(--c-GN) 65%,var(--s));background:color-mix(in srgb,var(--c-GN) 13%,var(--s));border-radius:34px 10px 34px 10px}
 .ep ul{margin:0;padding-left:18px;font-size:14.5px}.ep li{margin:3px 0}
 @media(max-width:600px){.egrid{grid-template-columns:1fr}.ectr{position:static;transform:none;display:grid;justify-items:center;order:-1}.eq.tl,.eq.tr,.eq.bl,.eq.br{padding:16px 18px;border-radius:26px 10px 26px 10px;min-height:0}}
+
+@media(max-width:860px){.fitwrap{flex-direction:column}.fa.a1 svg{transform:rotate(90deg)}.fa.a2 svg{transform:rotate(-90deg)}.fa{padding:12px 0}}
 </style>
 </head>
 <body>
@@ -659,24 +661,20 @@ function drawPersona(){
  <tr><th>類型</th>${D.personas.map(q=>`<td>${q.tag}（${q.age}）</td>`).join('')}</tr><tr><th>想完成的事</th>${D.personas.map(q=>`<td>${q.jtbd}</td>`).join('')}</tr>
  <tr><th>最大痛點</th>${D.personas.map(q=>`<td>${cd(q.pn[0])} ${REG[q.pn[0]].t}</td>`).join('')}</tr><tr><th>最大期待</th>${D.personas.map(q=>`<td>${cd(q.gn[0])} ${REG[q.gn[0]].t}</td>`).join('')}</tr></table></div>`;
 }
-function profileCircle(p,w){
- const cx=392,cy=150,r=118,P=(a,rr)=>[cx+rr*Math.cos(a*Math.PI/180),cy+rr*Math.sin(a*Math.PI/180)];
+function profileCircle(p,w,teaser){
+ const cx=teaser?222:140,cy=150,r=128,VW=teaser?360:280,P=(a,rr)=>[cx+rr*Math.cos(a*Math.PI/180),cy+rr*Math.sin(a*Math.PI/180)];
  const sec=(a0,a1,fill)=>{const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);return `<path d="M${cx} ${cy}L${x0} ${y0}A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1} ${y1}Z" fill="${fill}" stroke="var(--s)" stroke-width="3"/>`};
  const lab=(a,t,n,col)=>{const [x,y]=P(a,r*.62);return `<text x="${x}" y="${y-4}" text-anchor="middle" style="font-size:15px;font-weight:700;fill:${col}">${t}</text><text x="${x}" y="${y+16}" text-anchor="middle" style="font:500 13px var(--mono);fill:var(--mu)">${n}</text>`};
- return `<svg viewBox="0 0 520 300" style="width:100%;max-width:${w||520}px" role="img" aria-label="Customer Profile：收穫、痛點、待完成工作">
+ return `<svg viewBox="0 0 ${VW} 300" style="width:100%;max-width:${w||(teaser?360:300)}px" role="img" aria-label="Customer Profile：收穫、痛點、待完成工作">
  ${sec(-180,-50,'color-mix(in srgb,var(--c-GN) 20%,var(--s))')}${sec(-50,50,'var(--ps)')}${sec(50,180,'color-mix(in srgb,var(--c-PN) 18%,var(--s))')}
  ${lab(-115,'Gains 收穫',p.gn.length,'var(--c-GN)')}${lab(115,'Pains 痛點',p.pn.length,'var(--c-PN)')}${lab(0,'Jobs',3,'var(--pd)')}
  <text x="${P(0,r*.62)[0]}" y="${P(0,r*.62)[1]+32}" text-anchor="middle" style="font-size:11px;fill:var(--mu)">功能·情感·社會</text>
  <circle cx="${cx}" cy="${cy}" r="24" fill="var(--s)" stroke="var(--pd)" stroke-width="3"/><text x="${cx}" y="${cy+7}" text-anchor="middle" style="font:700 19px var(--serif);fill:var(--pd)">${p.ini}</text>
- <path d="M${cx-r-4} ${cy}H${cx-r-50}" stroke="var(--pd)" stroke-width="3" stroke-linecap="round"/><path d="M${cx-r-42} ${cy-8}l-10 8 10 8" fill="none" stroke="var(--pd)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
- <circle cx="182" cy="${cy}" r="24" fill="var(--s)" stroke="var(--pd)" stroke-width="2.5" stroke-dasharray="4 4"/><text x="182" y="${cy+5}" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--pd)">FIT</text>
- <g opacity=".5" style="fill:none;stroke:var(--mu);stroke-width:2;stroke-dasharray:5 4"><rect x="8" y="${cy-62}" width="124" height="124" rx="4"/><path d="M8 ${cy-62}L70 ${cy}L8 ${cy+62}M70 ${cy}H132"/><path d="M134 ${cy}H154M148 ${cy-6}l8 6-8 6" style="stroke-dasharray:none;stroke:var(--pd);stroke-linecap:round;stroke-linejoin:round"/></g>
- <g opacity=".6" style="font-size:10.5px;fill:var(--mu)" text-anchor="middle"><text x="34" y="${cy-3}">產品</text><text x="34" y="${cy+11}">與服務</text><text x="96" y="${cy-30}">收穫創造</text><text x="96" y="${cy-17}" style="font-size:9px">Gain creators</text><text x="96" y="${cy+36}">痛點紓解</text><text x="96" y="${cy+49}" style="font-size:9px">Pain relievers</text></g>
- <text x="70" y="${cy+82}" text-anchor="middle" style="font-size:11px;fill:var(--mu);opacity:.8">價值主張（示意）</text><text x="70" y="${cy+96}" text-anchor="middle" style="font-size:10.5px;fill:var(--mu);opacity:.8">待 3.3 價值主張畫布填入</text>
- <text x="182" y="${cy+42}" text-anchor="middle" style="font-size:10.5px;fill:var(--mu)">3.5 Fit 檢視</text></svg>`}
+${teaser?`<path d="M${cx-r-4} ${cy}H${cx-r-34}" stroke="var(--pd)" stroke-width="3" stroke-linecap="round"/><path d="M${cx-r-26} ${cy-8}l-10 8 10 8" fill="none" stroke="var(--pd)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+ <circle cx="26" cy="${cy}" r="23" fill="var(--s)" stroke="var(--pd)" stroke-width="2.5" stroke-dasharray="4 4"/><text x="26" y="${cy+5}" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--pd)">FIT</text><text x="26" y="${cy+42}" text-anchor="middle" style="font-size:10.5px;fill:var(--mu)">待 3.3 對接</text>`:''}</svg>`}
 function drawCP(){
  const p=PER[PS];
- $('#cpbody').innerHTML=`<div class="g2" style="align-items:center"><div style="display:grid;justify-items:center;gap:6px">${profileCircle(p)}<div class="xs mu">對象：${p.c} ${p.name}（${p.tag}）</div></div>
+ $('#cpbody').innerHTML=`<div class="g2" style="align-items:center"><div style="display:grid;justify-items:center;gap:6px">${profileCircle(p,360,true)}<div class="xs mu">對象：${p.c} ${p.name}（${p.tag}）</div></div>
  <div style="display:grid;gap:12px"><div class="card w"><div class="zhd">CUSTOMER JOB(S) 待完成的工作</div><p class="sm">${p.jtbd}</p></div><div class="card w"><div class="zhd" style="color:var(--c-PN)">PAINS</div>${p.pn.map(c=>`<div class="pn-line">${cd(c)}<span>${REG[c].t}</span></div>`).join('')}</div><div class="card w"><div class="zhd" style="color:var(--c-GN)">GAINS</div>${p.gn.map(c=>`<div class="pn-line">${cd(c)}<span>${REG[c].t}</span></div>`).join('')}</div></div></div>`}
 function renderDefine(){
  const af=`<div class="bar"><div id="afseg"></div><span class="xs mu">${PAINS.length} 張痛點便利貼，每張標註來源訪談</span></div><div id="afbody"></div>
@@ -723,7 +721,7 @@ function drawVPC(){
  }
  const prof=`<div style="display:grid;justify-items:center">${profileCircle(p,300)}</div>`;
  $('#vpcbody').innerHTML=`<div class="vpc"><div><div class="zhd" style="margin-bottom:6px">VALUE MAP 我們提供什麼（${VVER==='v1'?'v1 App＋IoT':'v2 信任卡＋LINE＋冷鏈併單'}）</div><div class="vm"><div class="ps"><h5>Products &amp; Services 產品與服務</h5>${ps}</div><div class="gc"><h5>Gain Creators 創造收穫</h5>${gc}</div><div><h5>Pain Relievers 解除痛點</h5>${pr}</div></div></div>
- <div><div class="fit">Fit</div></div>
+ <div class="fitwrap"><span class="fa a1" title="價值主張 → Fit"><svg viewBox="0 0 40 16" width="40" height="16" aria-hidden="true"><path d="M2 8H34M28 2l7 6-7 6" fill="none" stroke="var(--pd)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="fit">Fit</div><span class="fa a2" title="顧客檔案 → Fit"><svg viewBox="0 0 40 16" width="40" height="16" aria-hidden="true"><path d="M2 8H34M28 2l7 6-7 6" fill="none" stroke="var(--pd)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
  <div><div class="zhd" style="margin-bottom:6px">CUSTOMER PROFILE ${cust?'顧客':'提供者'}：${p.name}</div>${prof}</div></div>
  <div class="g3" style="margin-top:12px"><div class="card w"><div class="zhd">JOBS 待完成</div>${ul(D.vpc[cust?'cust':'prov'].jobs)}</div><div class="card w"><div class="zhd" style="color:var(--c-PN)">PAINS</div><div style="display:grid;gap:4px;margin-top:6px">${pm.map(([c,t])=>`<div class="pn-line" style="margin:0">${cd(c)}<span>${t}</span></div>`).join('')}</div></div><div class="card w"><div class="zhd" style="color:var(--c-GN)">GAINS</div><div style="display:grid;gap:4px;margin-top:6px">${gn.map(c=>`<div class="pn-line" style="margin:0">${cd(c)}<span>${REG[c].t}</span></div>`).join('')}</div></div></div>${gap}`}
 function renderDevelop(){
