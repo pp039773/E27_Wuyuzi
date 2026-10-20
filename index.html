@@ -660,15 +660,20 @@ function drawPersona(){
  <tr><th>最大痛點</th>${D.personas.map(q=>`<td>${cd(q.pn[0])} ${REG[q.pn[0]].t}</td>`).join('')}</tr><tr><th>最大期待</th>${D.personas.map(q=>`<td>${cd(q.gn[0])} ${REG[q.gn[0]].t}</td>`).join('')}</tr></table></div>`;
 }
 function profileCircle(p,w){
- const cx=190,cy=150,r=130,P=(a,rr)=>[cx+rr*Math.cos(a*Math.PI/180),cy+rr*Math.sin(a*Math.PI/180)];
+ const cx=392,cy=150,r=118,P=(a,rr)=>[cx+rr*Math.cos(a*Math.PI/180),cy+rr*Math.sin(a*Math.PI/180)];
  const sec=(a0,a1,fill)=>{const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);return `<path d="M${cx} ${cy}L${x0} ${y0}A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1} ${y1}Z" fill="${fill}" stroke="var(--s)" stroke-width="3"/>`};
  const lab=(a,t,n,col)=>{const [x,y]=P(a,r*.62);return `<text x="${x}" y="${y-4}" text-anchor="middle" style="font-size:15px;font-weight:700;fill:${col}">${t}</text><text x="${x}" y="${y+16}" text-anchor="middle" style="font:500 13px var(--mono);fill:var(--mu)">${n}</text>`};
- return `<svg viewBox="0 0 340 300" style="width:100%;max-width:${w||360}px" role="img" aria-label="Customer Profile：收穫、痛點、待完成工作">
+ return `<svg viewBox="0 0 520 300" style="width:100%;max-width:${w||520}px" role="img" aria-label="Customer Profile：收穫、痛點、待完成工作">
  ${sec(-180,-50,'color-mix(in srgb,var(--c-GN) 20%,var(--s))')}${sec(-50,50,'var(--ps)')}${sec(50,180,'color-mix(in srgb,var(--c-PN) 18%,var(--s))')}
  ${lab(-115,'Gains 收穫',p.gn.length,'var(--c-GN)')}${lab(115,'Pains 痛點',p.pn.length,'var(--c-PN)')}${lab(0,'Jobs',3,'var(--pd)')}
  <text x="${P(0,r*.62)[0]}" y="${P(0,r*.62)[1]+32}" text-anchor="middle" style="font-size:11px;fill:var(--mu)">功能·情感·社會</text>
  <circle cx="${cx}" cy="${cy}" r="24" fill="var(--s)" stroke="var(--pd)" stroke-width="3"/><text x="${cx}" y="${cy+7}" text-anchor="middle" style="font:700 19px var(--serif);fill:var(--pd)">${p.ini}</text>
- <path d="M6 ${cy}H${cx-r-6}" stroke="var(--pd)" stroke-width="3"/><path d="M${cx-r-14} ${cy-8}l10 8-10 8" fill="none" stroke="var(--pd)" stroke-width="3"/></svg>`}
+ <path d="M${cx-r-4} ${cy}H${cx-r-50}" stroke="var(--pd)" stroke-width="3" stroke-linecap="round"/><path d="M${cx-r-42} ${cy-8}l-10 8 10 8" fill="none" stroke="var(--pd)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+ <circle cx="182" cy="${cy}" r="24" fill="var(--s)" stroke="var(--pd)" stroke-width="2.5" stroke-dasharray="4 4"/><text x="182" y="${cy+5}" text-anchor="middle" style="font:700 14px var(--serif);fill:var(--pd)">FIT</text>
+ <g opacity=".5" style="fill:none;stroke:var(--mu);stroke-width:2;stroke-dasharray:5 4"><rect x="8" y="${cy-62}" width="124" height="124" rx="4"/><path d="M8 ${cy-62}L70 ${cy}L8 ${cy+62}M70 ${cy}H132"/><path d="M134 ${cy}H154M148 ${cy-6}l8 6-8 6" style="stroke-dasharray:none;stroke:var(--pd);stroke-linecap:round;stroke-linejoin:round"/></g>
+ <g opacity=".6" style="font-size:10.5px;fill:var(--mu)" text-anchor="middle"><text x="34" y="${cy-3}">產品</text><text x="34" y="${cy+11}">與服務</text><text x="96" y="${cy-30}">收穫創造</text><text x="96" y="${cy-17}" style="font-size:9px">Gain creators</text><text x="96" y="${cy+36}">痛點紓解</text><text x="96" y="${cy+49}" style="font-size:9px">Pain relievers</text></g>
+ <text x="70" y="${cy+82}" text-anchor="middle" style="font-size:11px;fill:var(--mu);opacity:.8">價值主張（示意）</text><text x="70" y="${cy+96}" text-anchor="middle" style="font-size:10.5px;fill:var(--mu);opacity:.8">待 3.3 價值主張畫布填入</text>
+ <text x="182" y="${cy+42}" text-anchor="middle" style="font-size:10.5px;fill:var(--mu)">3.5 Fit 檢視</text></svg>`}
 function drawCP(){
  const p=PER[PS];
  $('#cpbody').innerHTML=`<div class="g2" style="align-items:center"><div style="display:grid;justify-items:center;gap:6px">${profileCircle(p)}<div class="xs mu">對象：${p.c} ${p.name}（${p.tag}）</div></div>
