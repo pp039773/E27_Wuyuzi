@@ -388,6 +388,20 @@ function renderTeam(){const T=TM_T||TEAMX;const ph=Object.assign({},T.photos||{}
 async function initTeam(){TM_PH=await tmLoadPh();const st=await tmShared();const t=tmFromStore(st);if(t){TM_T=t;TM_SRC='shared'}renderTeam();
  document.addEventListener('change',e=>{const u=e.target.closest('input[data-tup]');if(!u||!u.files[0])return;const f=u.files[0];if(!/^image\//.test(f.type)||f.size>8e6)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);TM_PH[u.dataset.tup]=c.toDataURL('image/jpeg',.86);tmSavePh();renderTeam()};im.src=rd.result};rd.readAsDataURL(f)})}
 
+/* Persona 照片：先讀網站資料夾 workbench/photo/Persona，再套用此瀏覽器內的自行上傳 */
+const PPH_DIR='workbench/photo/Persona/';
+let PPH_LOCAL={};
+async function pphLoad(){try{const d=await tmIdb();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get('pph');q.onsuccess=()=>r(q.result||{});q.onerror=()=>r({})})}catch(e){return{}}}
+function pphSave(){tmIdb().then(d=>{d.transaction('kv','readwrite').objectStore('kv').put(PPH_LOCAL,'pph')}).catch(()=>{})}
+function pphTry(url){return new Promise(r=>{const im=new Image();im.onload=()=>r(url);im.onerror=()=>r(null);im.src=url})}
+async function pphFolder(p){const names=[p.c,p.c.toLowerCase(),p.name],exts=['jpg','png','jpeg','webp'];
+ for(const n of names)for(const x of exts){const u=PPH_DIR+encodeURIComponent(n)+'.'+x;const ok=await pphTry(u);if(ok)return ok}return null}
+function pphResize(file){return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.88))};im.onerror=rej;im.src=rd.result};rd.onerror=rej;rd.readAsDataURL(file)})}
+async function initPH(){const redraw=()=>{drawPersona();drawCP();drawVPC&&drawVPC()};
+ PPH_LOCAL=await pphLoad();
+ const found=await Promise.all(D.personas.map(async p=>[p.c,await pphFolder(p)]));
+ found.forEach(([c,u])=>{if(u)PH[c]=u});Object.keys(PPH_LOCAL).forEach(c=>{PH[c]=PPH_LOCAL[c]});redraw()}
+
 /* 原創角色插畫：柔和手繪、水彩感（SVG 內嵌，不依賴外部圖檔） */
 (function(){
 const defs=`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -611,7 +625,9 @@ function drawORID(k){const o=D.orid.find(x=>x.k===k);
  const row=(l,z,a)=>{const [en,zh]=z.split(' ');return `<div class="orc" style="--oc:${OC[l]}"><div class="orl"><b>${l}</b><span>${en}</span><span class="zh">${zh}</span></div>${ul(a)}</div>`};
  $('#oridbody').innerHTML=`<div class="g2" style="margin-bottom:10px"><div class="card"><div class="zhd">OPENING 開場白</div><p class="sm">${o.opening}</p></div><div class="card"><div class="zhd">PRACTICAL RESULT 預期成果</div><p class="sm">${o.expect}</p></div></div><div style="display:grid;gap:8px">${row('O','Objective 事實',o.O)}${row('R','Reflective 感受',o.R)}${row('I','Interpretive 詮釋',o.I)}${row('D','Decisional 決定',o.D)}</div><div class="card" style="margin-top:10px"><div class="zhd">訪談技巧</div>${ul(o.tips)}</div>`}
 
-let PS='P2',JMODE='both';
+let PS='P2',JP='P2',JMODE='both';
+const JROLE={P1:['漁民代表','養殖與自銷漁民','I-01'],P2:['顧客代表－福委','企業行政採購／福委','I-04'],P3:['顧客代表－送禮','家庭送禮買家','I-05']};
+const jsil=(k,s)=>`<div class="esil" style="width:${s}px;height:${s}px;flex:none"><svg viewBox="0 0 100 100" role="img" aria-label="${JROLE[k][0]}">${SILS[JROLE[k][2]]}</svg></div>`;
 const PITEMS=[['P1','P1 海川伯'],['P2','P2 王雅琪'],['P3','P3 陳淑芬'],['P4','P4 小琪']];
 function setPS(c){PS=c;$$('.pseg').forEach(e=>$$('button',e).forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===c||(e.dataset.j&&c==='P4'&&b.dataset.k==='P1'))));drawPersona();drawJM();drawCP();drawVPC&&drawVPC()}
 function pseg(el,items){seg(el,items,PS,setPS);el.classList.add('pseg')}
@@ -622,7 +638,7 @@ function drawAF(m){
  $('#afbody').innerHTML=`<div class="g4">${D.clusters.map(c=>{const ps=PAINS.filter(p=>p.k===c.k);const pn=D.reg.filter(r=>r.y==='PN'&&r.k===c.k).map(r=>r.c);
   return `<div class="card w" style="display:grid;gap:8px;align-content:start;${c.key?'border-top:3px solid var(--acc)':''}"><div><b>${c.t}</b> <span class="badge ${c.key?'b-mid':'b-ok'}">${ps.length} 張</span></div><p class="sm mu">${c.d}</p>${ps.map(nt).join('')}<div class="sm"><b>歸納成</b> ${cds(pn)}</div><div class="sm" style="font-weight:700;color:${c.key?'var(--acc)':'var(--mu)'}">${c.key?'→ 要解的痛點':'→ 設計約束'}</div></div>`}).join('')}</div>`}
 function drawJM(){
- const jp=PS==='P4'?'P1':PS;const j=D.journeys.find(x=>x.p===jp),p=PER[jp];
+ const j=D.journeys.find(x=>x.p===JP),jr=JROLE[JP];
  const X=i=>100+i*200,Y=v=>200-(v-1)*40;
  let s=`<svg viewBox="0 0 1000 240" style="width:100%;display:block" role="img" aria-label="情緒曲線：1 最低、5 最高">`;
  s+=`<rect x="0" y="${Y(2.4)}" width="1000" height="${Y(0.6)-Y(2.4)}" fill="var(--as)" opacity=".7"/>`;
@@ -637,7 +653,7 @@ function drawJM(){
  const cell=(h,c)=>`<div class="${c||''}">${h}</div>`;
  let g='';
  g+=`<div class="zr" style="grid-row:1/2">Zone A · The Lens</div><div class="rl"><b>①②</b>人物與情境</div>`+
-  `<div class="zA" style="grid-column:3/5;flex-direction:row;align-items:center;gap:12px">${avatar(p,'mid')}<div><b>${p.name}，${p.age} 歲</b> ${cd(p.c)}<div class="xs mu">${p.tag}</div></div></div>`+
+  `<div class="zA" style="grid-column:3/5;flex-direction:row;align-items:center;gap:12px">${jsil(JP,64)}<div><b>${JP} ${jr[0]}</b><div class="xs mu">${jr[1]}</div></div></div>`+
   `<div class="zA" style="grid-column:5/8"><div><span class="zhd">情境 SCENARIO</span><br>${j.scenario}</div><div><span class="zhd">目標與期待 GOALS &amp; EXPECTATIONS</span><br>${j.want}</div></div>`;
  g+=`<div class="zr" style="grid-row:2/7">Zone B · The Experience</div><div class="rl"><b>③</b>階段 Phases</div>`+j.stages.map((t,i)=>`<div class="ph"><small>PHASE ${i+1}</small>${t}</div>`).join('');
  g+=`<div class="rl"><b>④</b>行動 Actions</div>`+j.do.map((t,i)=>cell(`${t}${cds(j.evc[i])}`)).join('');
@@ -646,7 +662,7 @@ function drawJM(){
  g+=`<div class="rl"><b>⑥</b>情緒 Emotional experience<div class="xs mu" style="font-weight:400">橘底＝情緒低點區<br><span style="color:var(--c-PN)">━ 現況</span><br><span style="color:var(--c-OP)">┅ 未來</span></div></div><div style="grid-column:3/8;padding:6px 4px">${s}</div>`;
  g+=`<div class="zr c" style="grid-row:7/9">Zone C · The Insights</div><div class="rl"><b>⑦</b>機會 Opportunities</div>`+j.oppt.map((t,i)=>cell(`${t}${cds(j.opp[i])}`,'opc')).join('');
  g+=`<div class="rl"><b>⑧</b>內部負責 Internal ownership</div>`+j.own.map(t=>cell(t)).join('');
- $('#jmbody').innerHTML=`<div class="sc"><div class="jm">${g}</div></div><div class="call" style="margin-top:12px"><b>情緒最低點：</b>${j.low}。${PS==='P4'?'（小琪是關鍵角色，沒有獨立旅程，這裡顯示 P1 海川伯的旅程。）':''}</div>`;
+ $('#jmbody').innerHTML=`<div class="sc"><div class="jm">${g}</div></div><div class="call" style="margin-top:12px"><b>情緒最低點：</b>${j.low}。</div>`;
 }
 const SHPOS={};
 function drawSH(v){
@@ -708,17 +724,17 @@ function renderDefine(){
   <div class="sub">歸納出的洞察</div><div class="g2">${D.reg.filter(r=>r.y==='IN').map(r=>`<div class="card w" style="display:grid;gap:4px"><span>${cd(r.c)} <b>${r.t}</b></span><span class="sm mu">${r.d}</span><span class="xs">來源 ${cds(r.ev)}</span></div>`).join('')}</div>`;
  const jm=`<div class="bar"><div id="jpseg" data-j="1"></div><div id="jmseg"></div></div><div id="jmbody"></div>`;
  const sh=`<div class="bar"><div id="shseg"></div></div><div class="svgbox"><svg id="shsvg" viewBox="0 0 720 566" style="min-width:600px;width:100%;max-width:820px;display:block;margin:auto" role="img" aria-label="利害關係人圖"></svg></div><div class="g3" id="shchg" style="margin-top:12px"></div>`;
- const pe=`<div class="bar"><div id="peseg"></div><span class="xs mu">插畫為原創角色示意；滑過圓形可換成真實訪談照片（僅留在你的瀏覽器）</span></div><div id="pebody"></div>`;
+ const pe=`<div class="bar"><div id="peseg"></div><span class="xs mu">插畫為原創角色示意。要換成真實照片：滑過圓形上傳（只存在此瀏覽器），或把照片放進網站的 workbench/photo/Persona 資料夾（檔名 P1.jpg…P4.jpg，所有人都看得到）</span></div><div id="pebody"></div>`;
  const cp=`<div class="bar"><div id="cpseg"></div></div><div id="cpbody"></div>`;
  $('#tab-define').innerHTML=hero('STEP 2 · DEFINE 定義','收斂出真正的問題','把散落的便利貼收斂成結構：Affinity 歸納 → 旅程圖找情緒低點 → 利害關係人改版 → Persona → Customer Profile。',1)+
   jumpbar([['t-af','2.1','Affinity 歸納'],['t-jm','2.2','顧客旅程圖'],['t-sh','2.3','利害關係人圖'],['t-pe','2.4','Persona'],['t-cp','2.5','Customer Profile']])+
   tool('t-af','2.1','Affinity Diagram 歸納','Affinity diagram','PDF p.20','把便利貼依相似性分群，讓共同痛點浮出來。','12 個 PN 痛點，分成信任落差、回饋斷鏈、旺季失控，加一群「導入門檻」（設計約束）。',af)+
-  tool('t-jm','2.2','顧客旅程圖','Customer Journey Map','PDF p.21–22','Zone A 定視角（人物與情境）、Zone B 畫體驗（階段、行動、想法、情緒）、Zone C 找機會與內部負責人。','三位 Persona 各一張旅程，情緒低點直接指向 OP 機會點。',jm)+
+  tool('t-jm','2.2','顧客旅程圖','Customer Journey Map','PDF p.21–22','Zone A 定視角（人物與情境）、Zone B 畫體驗（階段、行動、想法、情緒）、Zone C 找機會與內部負責人。','三位代表角色（P1 漁民、P2 顧客－福委、P3 顧客－送禮）各一張旅程，情緒低點直接指向 OP 機會點。',jm)+
   tool('t-sh','2.3','利害關係人圖','Stakeholder Map','PDF p.23–24','盤點服務涉及的人與組織，從核心往外分層，決定訪談誰、設計時要顧到誰。','v1（10/18 假設）→ v2（訪談後）：福委升級、新增二代與法規，移出電商與觀光。',sh)+
   tool('t-pe','2.4','Persona 人物誌','Persona','PDF p.25–26','把多位受訪者的共同特質組成一個代表人物：背景、行為、想達成的目標，並承載痛點與期待。','3 位目標人物＋1 位關鍵角色，全部標註來源訪談。',pe)+
   tool('t-cp','2.5','Customer Profile 客戶側','Customer Profile','PDF p.27','把人物的待完成工作、痛點、收穫放進一張圓形圖，下一步與價值主張畫布左側對接。','三位人物各一張，編碼與資料庫共用。',cp);
  seg($('#afseg'),[['cluster','依群組'],['scatter','全部便利貼']],'cluster',drawAF);drawAF('cluster');
- pseg($('#jpseg'),PITEMS.slice(0,3));
+ seg($('#jpseg'),Object.keys(JROLE).map(k=>[k,k+' '+JROLE[k][0]]),JP,k=>{JP=k;drawJM()});
  seg($('#jmseg'),[['both','現況＋未來'],['asis','只看現況'],['tobe','只看未來']],'both',k=>{JMODE=k;drawJM()});
  seg($('#shseg'),[['v2','v2 訪談後'],['v1','v1 假設版']],'v2',drawSH);drawSH('v2');
  pseg($('#peseg'),PITEMS);pseg($('#cpseg'),PITEMS);
@@ -857,10 +873,10 @@ function init(){
  $('#drw').addEventListener('click',e=>{if(e.target.id==='drw')$('#drw').hidden=true});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#drw').hidden=true});
  document.addEventListener('change',e=>{const u=e.target.closest('input[data-up]');if(!u||!u.files[0])return;const f=u.files[0];if(!/^image\//.test(f.type)||f.size>8e6)return;
-  const rd=new FileReader();rd.onload=()=>{PH[u.dataset.up]=rd.result;drawPersona();drawJM();drawCP();drawVPC()};rd.readAsDataURL(f)});
+  pphResize(f).then(d=>{PH[u.dataset.up]=d;PPH_LOCAL[u.dataset.up]=d;pphSave();drawPersona();drawCP();drawVPC()}).catch(()=>{})});
  const fromHash=()=>showTab((location.hash||'').slice(1),true);window.addEventListener('hashchange',fromHash);fromHash();
 }
-init();initTeam();
+init();initTeam();initPH();
 
 </script>
 
