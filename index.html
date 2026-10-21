@@ -388,8 +388,8 @@ function renderTeam(){const T=TM_T||TEAMX;const ph=Object.assign({},T.photos||{}
 async function initTeam(){TM_PH=await tmLoadPh();const st=await tmShared();const t=tmFromStore(st);if(t){TM_T=t;TM_SRC='shared'}renderTeam();
  document.addEventListener('change',e=>{const u=e.target.closest('input[data-tup]');if(!u||!u.files[0])return;const f=u.files[0];if(!/^image\//.test(f.type)||f.size>8e6)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);TM_PH[u.dataset.tup]=c.toDataURL('image/jpeg',.86);tmSavePh();renderTeam()};im.src=rd.result};rd.readAsDataURL(f)})}
 
-/* Persona 照片：先讀網站資料夾 workbench/photo/Persona，再套用此瀏覽器內的自行上傳 */
-const PPH_DIR='workbench/photo/Persona/';
+/* Persona 照片：先讀網站資料夾 workbench/photos/Persona，再套用此瀏覽器內的自行上傳 */
+const PPH_DIR='workbench/photos/Persona/';
 let PPH_LOCAL={};
 async function pphLoad(){try{const d=await tmIdb();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get('pph');q.onsuccess=()=>r(q.result||{});q.onerror=()=>r({})})}catch(e){return{}}}
 function pphSave(){tmIdb().then(d=>{d.transaction('kv','readwrite').objectStore('kv').put(PPH_LOCAL,'pph')}).catch(()=>{})}
@@ -724,7 +724,7 @@ function renderDefine(){
   <div class="sub">歸納出的洞察</div><div class="g2">${D.reg.filter(r=>r.y==='IN').map(r=>`<div class="card w" style="display:grid;gap:4px"><span>${cd(r.c)} <b>${r.t}</b></span><span class="sm mu">${r.d}</span><span class="xs">來源 ${cds(r.ev)}</span></div>`).join('')}</div>`;
  const jm=`<div class="bar"><div id="jpseg" data-j="1"></div><div id="jmseg"></div></div><div id="jmbody"></div>`;
  const sh=`<div class="bar"><div id="shseg"></div></div><div class="svgbox"><svg id="shsvg" viewBox="0 0 720 566" style="min-width:600px;width:100%;max-width:820px;display:block;margin:auto" role="img" aria-label="利害關係人圖"></svg></div><div class="g3" id="shchg" style="margin-top:12px"></div>`;
- const pe=`<div class="bar"><div id="peseg"></div><span class="xs mu">插畫為原創角色示意。要換成真實照片：滑過圓形上傳（只存在此瀏覽器），或把照片放進網站的 workbench/photo/Persona 資料夾（檔名 P1.jpg…P4.jpg，所有人都看得到）</span></div><div id="pebody"></div>`;
+ const pe=`<div class="bar"><div id="peseg"></div><span class="xs mu">插畫為原創角色示意。要換成真實照片：滑過圓形上傳（只存在此瀏覽器），或把照片放進網站的 workbench/photos/Persona 資料夾（檔名 P1.jpg…P4.jpg，所有人都看得到）</span></div><div id="pebody"></div>`;
  const cp=`<div class="bar"><div id="cpseg"></div></div><div id="cpbody"></div>`;
  $('#tab-define').innerHTML=hero('STEP 2 · DEFINE 定義','收斂出真正的問題','把散落的便利貼收斂成結構：Affinity 歸納 → 旅程圖找情緒低點 → 利害關係人改版 → Persona → Customer Profile。',1)+
   jumpbar([['t-af','2.1','Affinity 歸納'],['t-jm','2.2','顧客旅程圖'],['t-sh','2.3','利害關係人圖'],['t-pe','2.4','Persona'],['t-cp','2.5','Customer Profile']])+
