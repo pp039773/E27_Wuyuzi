@@ -310,6 +310,18 @@ nav.tabs button[aria-selected=true]{background:var(--segon);color:var(--segontx)
 @media(max-width:600px){.egrid{grid-template-columns:1fr}.ectr{position:static;transform:none;display:grid;justify-items:center;order:-1}.eq.tl,.eq.tr,.eq.bl,.eq.br{padding:16px 18px;border-radius:26px 10px 26px 10px;min-height:0}}
 
 @media(max-width:860px){.fitwrap{flex-direction:column}.fa.a1 svg{transform:rotate(90deg)}.fa.a2 svg{transform:rotate(-90deg)}.fa{padding:12px 0}}
+
+/* 同理心圖中央人物剪影 */
+.esil{width:88px;height:88px;border-radius:50%;overflow:hidden;background:linear-gradient(180deg,color-mix(in srgb,var(--pri) 10%,var(--s)),color-mix(in srgb,var(--pri) 26%,var(--s)));color:var(--pd)}
+.esil svg{width:100%;height:100%;display:block;fill:currentColor;stroke:none}
+.esil svg [fill="none"]{stroke:currentColor}.esil svg .a{fill:var(--acc);stroke:var(--acc)}.esil svg .b{stroke:var(--s);fill:none}.esil svg .a[fill="none"]{fill:none}
+.elab{position:absolute;left:50%;top:calc(50% + 60px);transform:translateX(-50%);width:124px;text-align:center;background:var(--s);border:1.5px solid var(--ln);border-radius:12px;padding:3px 6px;box-shadow:0 3px 8px rgba(43,74,99,.14);display:grid;line-height:1.25;z-index:2}
+.elab b{font-size:14px;color:var(--pd)}.elab span{font-size:11px;color:var(--mu)}
+@media(max-width:600px){.elab{position:static;transform:none;width:auto;justify-self:center;order:-1}}
+/* Persona：待完成的工作改暖色，避免與深底「切換」區塊混淆 */
+.jt{background:color-mix(in srgb,var(--acc) 13%,var(--s));color:var(--fg);border:1.5px solid color-mix(in srgb,var(--acc) 50%,var(--s));border-left:6px solid var(--acc)}
+.jt p{color:var(--fg)}.jt .xs{color:var(--warn);opacity:1!important}
+.jt3 div{background:var(--s);border:1px solid color-mix(in srgb,var(--acc) 35%,var(--s))}.jt3 b{color:var(--warn);opacity:1}
 </style>
 </head>
 <body>
@@ -549,6 +561,19 @@ const EI={
  chat:'<path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>',
  pain:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',
  gain:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>'};
+const SB='M10 100C10 72 30 62 50 62S90 72 90 100Z';
+const SILS={
+ 'I-01':`<path d="${SB}"/><circle cx="50" cy="40" r="15"/><ellipse cx="50" cy="28" rx="33" ry="6.5" class="a"/><path d="M27 28Q50 -4 73 28Z" class="a"/><path d="M27 28Q50 36 73 28" class="b" stroke-width="3" fill="none"/><path d="M40 62l10 10 10-10" class="b" stroke-width="2.5" fill="none"/>`,
+ 'I-02':`<path d="${SB}"/><circle cx="50" cy="42" r="15"/><path d="M33 36Q50 10 67 36Z" class="a"/><path d="M62 35h18l-2 5H62z" class="a"/><path d="M33 72h34l5 28H28z" class="a" opacity=".55"/><path d="M40 62v10M60 62v10" class="b" stroke-width="2.5"/>`,
+ 'I-03':`<path d="${SB}"/><circle cx="50" cy="40" r="15"/><path d="M35 38Q36 20 52 22Q66 24 65 38Q58 28 50 28Q42 28 35 38Z"/><path d="M63 28Q82 28 80 54Q76 44 66 40Z"/><circle cx="64" cy="29" r="3" class="a"/><rect x="62" y="76" width="14" height="22" rx="3" class="a" transform="rotate(12 69 87)"/>`,
+ 'I-04':`<path d="${SB}"/><circle cx="50" cy="40" r="15"/><path d="M33 42Q30 18 50 18Q70 18 67 42Q66 28 50 26Q36 28 33 42Z"/><path d="M33 42Q31 56 38 62M67 42Q69 56 62 62" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="44" cy="42" r="5.5" fill="none" class="b" stroke-width="1.8"/><circle cx="56" cy="42" r="5.5" fill="none" class="b" stroke-width="1.8"/><path d="M42 62l8 38 8-38" fill="none" class="a" stroke-width="3"/><rect x="45" y="82" width="10" height="12" rx="2" class="a"/>`,
+ 'I-05':`<path d="${SB}"/><circle cx="50" cy="42" r="14"/><g><circle cx="36" cy="34" r="8"/><circle cx="44" cy="26" r="8"/><circle cx="56" cy="26" r="8"/><circle cx="64" cy="34" r="8"/></g><rect x="62" y="74" width="26" height="24" rx="3" class="a"/><path d="M69 74q6-12 12 0" fill="none" class="a" stroke-width="3"/>`,
+ 'I-06':`<path d="${SB}"/><circle cx="50" cy="42" r="15"/><path d="M34 36q-3-12 8-14l16 0q11 2 8 14-6-8-16-8t-16 8z"/><circle cx="43" cy="42" r="5.5" fill="none" class="b" stroke-width="1.8"/><circle cx="57" cy="42" r="5.5" fill="none" class="b" stroke-width="1.8"/><path d="M42 52q8 4 16 0" class="b" stroke-width="2.4" fill="none"/><path d="M38 62l12 10 12-10" class="b" stroke-width="2.5" fill="none"/>`,
+ 'I-07':`<path d="${SB}"/><circle cx="50" cy="40" r="15"/><path d="M33 42Q28 16 50 16Q72 16 67 42Q70 62 74 70L62 66 62 44Q50 30 38 44L38 66 26 70Q30 60 33 42Z"/><path d="M32 40Q50 6 68 40" fill="none" class="a" stroke-width="3.2"/><rect x="30" y="38" width="6" height="11" rx="3" class="a"/><rect x="64" y="38" width="6" height="11" rx="3" class="a"/><rect x="28" y="80" width="44" height="18" rx="3" class="a"/>`,
+ 'I-08':`<path d="${SB}"/><circle cx="50" cy="42" r="14.5"/><circle cx="50" cy="22" r="8"/><path d="M34 40Q36 24 50 26Q64 24 66 40Q58 32 50 32Q42 32 34 40Z"/><path d="M36 64l14 22 14-22" fill="none" class="b" stroke-width="2.5"/><rect x="58" y="78" width="14" height="8" rx="2" class="a"/>`,
+ 'I-09':`<path d="M4 100C4 72 26 62 50 62S96 72 96 100Z"/><circle cx="50" cy="42" r="16"/><path d="M32 36Q50 12 68 36Z" class="a"/><path d="M30 36h40" class="b" stroke-width="3"/><path d="M34 72h32l4 28H30z" class="a" opacity=".6"/><path d="M42 56q8 5 16 0" class="b" stroke-width="3" fill="none"/>`,
+ 'I-10':`<path d="${SB}"/><circle cx="50" cy="42" r="15"/><path d="M33 38Q34 16 52 18Q68 20 67 38Z" class="a"/><path d="M60 37h18l-1 5H60z" class="a"/><rect x="24" y="72" width="52" height="28" rx="3" class="a"/><path d="M50 72v28M24 84h52" class="b" stroke-width="2.4" opacity=".7"/>`};
+const SROLE={'I-01':'竹北養殖漁民','I-02':'南寮店面漁民','I-03':'返鄉二代窗口','I-04':'企業採購／福委','I-05':'送長輩的買家','I-06':'退休老饕','I-07':'年輕送禮者','I-08':'漁會展售窗口','I-09':'展售店老闆','I-10':'冷凍宅配業者'};
 function empMap(i){
  const q=(cls,col,ic,zh,en,body)=>`<div class="eq ${cls}" style="--ec:${col}"><span class="ech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${EI[ic]}</svg>${zh}<small>${en}</small></span><p>${body}</p></div>`;
  const pn=i.pain.map(p=>`<li>${p.t}</li>`).join('');
@@ -557,7 +582,7 @@ function empMap(i){
   <div class="egrid">
    ${q('tl','#3ea5b8','ear','聽到','HEAR',i.hear)}${q('tr','#e0a02e','eye','看到','SEE',i.see)}
    ${q('bl','#8c7fd3','heart','想法與感受','THINK &amp; FEEL',i.think)}${q('br','#4f86cf','chat','說與做','SAY &amp; DO','「'+i.say+'」')}
-   <div class="ectr"><div class="ering"><div class="av mid">${nm(i).slice(0,2)}</div></div></div>
+   <div class="ectr"><div class="ering"><div class="esil"><svg viewBox="0 0 100 100" role="img" aria-label="${nm(i)}">${SILS[i.id]||''}</svg></div></div></div><div class="elab"><b>${nm(i)}</b><span>${SROLE[i.id]||i.role}</span></div>
   </div>
   <div class="erow"><span class="etag">INSIDE-OUT　內在回應</span></div></div>
  <div class="epg"><div class="ep pn"><span class="ech" style="--ec:var(--c-PN)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${EI.pain}</svg>痛點<small>PAIN</small></span><ul>${pn}</ul><div class="xs mu">歸納成 ${cds(pnOf(i))}</div></div>
