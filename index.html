@@ -295,8 +295,8 @@ nav.tabs button[aria-selected=true]{background:var(--segon);color:var(--segontx)
 .egrid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .eq{background:color-mix(in srgb,var(--ec) 15%,var(--s));border:2px solid color-mix(in srgb,var(--ec) 55%,var(--s));padding:14px 18px;min-height:140px;display:grid;align-content:start;gap:8px}
 .eq p{margin:0;font-size:14.5px;line-height:1.6}
-.eq.tl{border-radius:44px 10px 10px 10px;padding:18px 62px 36px 22px}.eq.tr{border-radius:10px 44px 10px 10px;padding:18px 22px 36px 62px}
-.eq.bl{border-radius:10px 10px 10px 44px;padding:38px 62px 18px 22px}.eq.br{border-radius:10px 10px 44px 10px;padding:38px 22px 18px 62px}
+.eq.qh{border-radius:44px 0 0 0;padding:18px 66px 36px 22px}.eq.qs{border-radius:0 44px 0 0;padding:18px 22px 36px 66px}
+.eq.qt{border-radius:0 0 0 44px;padding:38px 66px 18px 22px}.eq.qd{border-radius:0 0 44px 0;padding:38px 22px 18px 66px}
 .ech{display:inline-flex;align-items:center;gap:6px;justify-self:start;background:var(--ec);color:#fff;border-radius:99px;padding:4px 12px 4px 9px;font-size:13px;font-weight:700}
 .ech svg{width:16px;height:16px}.ech small{font:500 10px var(--mono);letter-spacing:.08em;opacity:.85;margin-left:2px}
 .ectr{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
@@ -307,7 +307,7 @@ nav.tabs button[aria-selected=true]{background:var(--segon);color:var(--segontx)
 .ep.pn{--ec:var(--c-PN);border-color:color-mix(in srgb,var(--c-PN) 60%,var(--s));background:color-mix(in srgb,var(--c-PN) 11%,var(--s));border-radius:10px 34px 10px 34px}
 .ep.gn{--ec:var(--c-GN);border-color:color-mix(in srgb,var(--c-GN) 65%,var(--s));background:color-mix(in srgb,var(--c-GN) 13%,var(--s));border-radius:34px 10px 34px 10px}
 .ep ul{margin:0;padding-left:18px;font-size:14.5px}.ep li{margin:3px 0}
-@media(max-width:600px){.egrid{grid-template-columns:1fr}.ectr{position:static;transform:none;display:grid;justify-items:center;order:-1}.eq.tl,.eq.tr,.eq.bl,.eq.br{padding:16px 18px;border-radius:26px 10px 26px 10px;min-height:0}}
+@media(max-width:600px){.egrid{grid-template-columns:1fr}.ectr{position:static;transform:none;display:grid;justify-items:center;order:-1}.eq.qh,.eq.qs,.eq.qt,.eq.qd{padding:16px 18px;border-radius:26px 0 26px 0;min-height:0}}
 
 @media(max-width:860px){.fitwrap{flex-direction:column}.fa.a1 svg{transform:rotate(90deg)}.fa.a2 svg{transform:rotate(-90deg)}.fa{padding:12px 0}}
 
@@ -328,6 +328,14 @@ nav.tabs button[aria-selected=true]{background:var(--segon);color:var(--segontx)
 .tile.link{font:inherit;text-align:left;cursor:pointer;color:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}
 .tile.link:hover{border-color:var(--pri);box-shadow:0 4px 12px rgba(43,74,99,.14);transform:translateY(-1px)}
 .tile.link span::after{content:" ›";color:var(--pri);font-weight:700}
+
+/* 同理心圖：剪影固定淺底深身，名字與角色以白字疊在剪影下方 */
+.esil{position:relative;width:100px;height:100px;color:#34526F;background:linear-gradient(180deg,#e3ecf4,#b9cade)}
+.esil svg .b{stroke:#e8eef4}
+.esil::after{content:"";position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(transparent,rgba(24,44,66,.72));pointer-events:none}
+.eln{position:absolute;left:0;right:0;bottom:7px;z-index:2;display:grid;justify-items:center;line-height:1.15;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.eln b{font-size:14px;font-weight:700}.eln span{font-size:10px;font-weight:500;opacity:.95;letter-spacing:.02em}
+.elab{display:none}
 </style>
 </head>
 <body>
@@ -600,9 +608,9 @@ function empMap(i){
  return `<div class="card w emap"><div class="bar" style="margin:0 0 12px"><b>${i.id}　${nm(i)}</b><span class="xs mu">${TYL[i.type]}｜${i.role}｜${i.date} ${i.place}</span></div>
  <div class="eflower"><div class="erow"><span class="etag">OUTSIDE-IN　外在輸入</span></div>
   <div class="egrid">
-   ${q('tl','#3ea5b8','ear','聽到','HEAR',i.hear)}${q('tr','#e0a02e','eye','看到','SEE',i.see)}
-   ${q('bl','#8c7fd3','heart','想法與感受','THINK &amp; FEEL',i.think)}${q('br','#4f86cf','chat','說與做','SAY &amp; DO','「'+i.say+'」')}
-   <div class="ectr"><div class="ering"><div class="esil"><svg viewBox="0 0 100 100" role="img" aria-label="${nm(i)}">${SILS[i.id]||''}</svg></div></div></div><div class="elab"><b>${nm(i)}</b><span>${SROLE[i.id]||i.role}</span></div>
+   ${q('qh','#3ea5b8','ear','聽到','HEAR',i.hear)}${q('qs','#e0a02e','eye','看到','SEE',i.see)}
+   ${q('qt','#8c7fd3','heart','想法與感受','THINK &amp; FEEL',i.think)}${q('qd','#4f86cf','chat','說與做','SAY &amp; DO','「'+i.say+'」')}
+   <div class="ectr"><div class="ering"><div class="esil"><svg viewBox="0 0 100 100" role="img" aria-label="${nm(i)}">${SILS[i.id]||''}</svg><div class="eln"><b>${nm(i)}</b><span>${SROLE[i.id]||i.role}</span></div></div></div></div>
   </div>
   <div class="erow"><span class="etag">INSIDE-OUT　內在回應</span></div></div>
  <div class="epg"><div class="ep pn"><span class="ech" style="--ec:var(--c-PN)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${EI.pain}</svg>痛點<small>PAIN</small></span><ul>${pn}</ul><div class="xs mu">歸納成 ${cds(pnOf(i))}</div></div>
