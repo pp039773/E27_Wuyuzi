@@ -395,7 +395,7 @@ function carryShared(from,to){SHARED.forEach(sh=>to.tables[sh]=clone(from.tables
 function buildFromBooks(list){const keep=S;S=newStore();try{list.forEach(([b64,name])=>{const wb=readWorkbook(b64buf(b64));apply(plan(wb,name))});const out=S;out.log=out.log.slice();return out}finally{S=keep;PREV=null}}
 async function flushStore(){await kvPut('ver:'+VER.cur,S);await kvPut('meta',VER)}
 function saveStore(){clearTimeout(saveT);saveT=setTimeout(flushStore,250)}
-async function switchVer(id){if(id===VER.cur||!VER.list.some(v=>v.id===id))return;clearTimeout(saveT);await flushStore();const old=S;const ns=storeFrom(await kvGet('ver:'+id));carryShared(old,ns);S=ns;PREV=null;VER.cur=id;await flushStore();renderAll()}
+async function switchVer(id){if(id===VER.cur||!VER.list.some(v=>v.id===id))return;clearTimeout(saveT);await flushStore();const old=S;const ns=storeFrom(await kvGet('ver:'+id));carryShared(old,ns);S=ns;PREV=null;VER.cur=id;await flushStore();syncURLVer();renderAll()}
 async function addVer(name,copy){const id='v'+Date.now().toString(36);const ns=copy?storeFrom(clone(S)):newStore();if(!copy)carryShared(S,ns);await kvPut('ver:'+id,ns);VER.list.push({id,name});await switchVer(id);return id}
 async function renameVer(name){const v=VER.list.find(x=>x.id===VER.cur);if(v){v.name=name;await kvPut('meta',VER);renderAll()}}
 async function deleteVer(){if(VER.list.length<2)return false;const id=VER.cur,i=VER.list.findIndex(v=>v.id===id),nx=VER.list[i?0:1].id;await switchVer(nx);VER.list=VER.list.filter(v=>v.id!==id);await kvDel('ver:'+id);await kvPut('meta',VER);renderAll();return true}
@@ -416,6 +416,10 @@ async function bootVersions(){
  }
 }
 let ST_FIRST=false;
+const vKey=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function urlVerId(){try{const q=new URLSearchParams(location.search);const r=q.get('reversion')||q.get('version')||q.get('ver');if(!r)return null;const k=vKey(r);const m=VER.list.find(v=>vKey(v.id)===k||vKey(v.name)===k);return m?m.id:null}catch(e){return null}}
+function syncURLVer(){try{const u=new URL(location.href);if(!u.searchParams.has('reversion'))return;u.searchParams.set('reversion',verName());history.replaceState(null,'',u.toString())}catch(e){}}
+async function applyURLVer(){const id=urlVerId();if(id&&id!==VER.cur){await switchVer(id)}}
 
 /* ---------- export ---------- */
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
@@ -689,6 +693,7 @@ function bind(){
 async function init(){
  $('#tabs').innerHTML=TABS.map(([k,z,en])=>`<button role="tab" data-t="${k}" aria-selected="false">${z}<small>${en}</small></button>`).join('');
  await bootVersions();
+ await applyURLVer();
  bind();renderAll();showTab((location.hash||'').slice(1));
  if(ST_FIRST)setTimeout(()=>toast('已新增版本「'+ST_FIRST+'」，目前顯示的就是它；其他版本可從右上角「版本」切換。'),400)}
 init();

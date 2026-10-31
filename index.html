@@ -501,7 +501,10 @@ if(document.body)ins();else document.addEventListener('DOMContentLoaded',ins);
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const D=JSON.parse($('#data').textContent);
 const VERS=[['sim','場域模擬版本'],['orid1','ORID_1st'],['orid11','ORID_1.1st'],['orid12','ORID_1.2st']];
+const verKey=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function verFromURL(){try{const q=new URLSearchParams(location.search);const r=q.get('reversion')||q.get('version')||q.get('ver');if(!r)return null;const k=verKey(r);const m=VERS.find(v=>verKey(v[0])===k||verKey(v[1])===k||(k==='sim'));return m?m[0]:null}catch(e){return null}}
 let VID='sim';try{const sv=localStorage.getItem('wujin-ver');if(VERS.some(v=>v[0]===sv))VID=sv}catch(e){}
+{const uv=verFromURL();if(uv){VID=uv;try{localStorage.setItem('wujin-ver',uv)}catch(e){}}}
 const IS12=VID==='orid12',IS11=VID==='orid11'||IS12,IS1=VID==='orid1'||IS11;
 const D1=JSON.parse($('#data1').textContent);
 if(IS1){D.interviews=D1.interviews;D.reg=D1.reg}
@@ -966,7 +969,9 @@ function renderPH(only){
  [['define','STEP 2 · DEFINE 定義','收斂出真正的問題',1],['develop','STEP 3 · DEVELOP 發展','發想、雛形、檢視 fit',2],['deliver','STEP 4 · DELIVER 交付','商業模式、MVP 與 Pivot',3]].filter(x=>!only||only.includes(x[0])).forEach(([k,e,h,on])=>{
   $('#tab-'+k).innerHTML=hero(e,h,IS11?'這個階段要先決定要做什麼服務；ORID_1.1st 目前完成了「發現」與「定義」。':'這個階段要用到訪談歸納後的痛點與洞察，ORID_1st 目前只完成「發現」。',on)+`<article class="tool" id="ph-${k}"><div class="sub">${VERS.find(v=>v[0]===VID)[1]} 尚無這一階段的資料</div><p class="sm">${IS11?'目前有 7 個機會點（OP）可以拿來發想服務構想；等團隊決定要做什麼之後，這裡才會有真實內容。':'第一輪 5 位顧客訪談目前只有訪談原話與同理心地圖。等團隊完成痛點歸納、洞察與 Persona 後，這裡才會有真實內容。'}為避免混淆，不會放入模擬案例的資料。</p><div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${IS11?'<button class="back" data-go="t-af">回到定義：看痛點與機會點</button>':'<button class="back" data-go="t-ci">回到發現：看 5 位顧客訪談</button>'}<button class="back" data-ver="sim">切換到「場域模擬版本」看完整示範</button></div></article>`})}
 function drawVer(){const s=$('#verSel');if(s)s.innerHTML=VERS.map(([k,t])=>`<option value="${k}"${k===VID?' selected':''}>${t}</option>`).join('')}
-function setVer(k){try{localStorage.setItem('wujin-ver',k)}catch(e){}location.reload()}
+function setVer(k){try{localStorage.setItem('wujin-ver',k)}catch(e){}
+ try{const u=new URL(location.href);const nm=(VERS.find(v=>v[0]===k)||[])[1];if(['reversion','version','ver'].some(x=>u.searchParams.has(x))){['version','ver'].forEach(x=>u.searchParams.delete(x));u.searchParams.set('reversion',nm);location.href=u.toString();return}}catch(e){}
+ location.reload()}
 function initVer(){drawVer();const ft=$('.foot');if(ft&&IS1)ft.textContent='目前版本「'+VERS.find(v=>v[0]===VID)[1]+'」：第一輪 5 位實際顧客訪談的整理'+(IS12?'，並完成定義與發展、交付（服務為設計提案，假說尚未測試，價格與成本沒有資料）':IS11?'，並完成定義（痛點、洞察、機會點、Persona、旅程；旅程情緒分數為推估）':'')+'，受訪者皆為化名，年齡與職業為依訪談內容推估。「場域模擬版本」則是教學演練的假想完成版，內容皆為示範用假設。';document.addEventListener('change',e=>{if(e.target.id==='verSel')setVer(e.target.value)});document.addEventListener('click',e=>{const b=e.target.closest('[data-ver]');if(b)setVer(b.dataset.ver)})}
 function init(){
  $('#tabs').innerHTML=TABS.map(([k,z,e])=>`<button role="tab" data-t="${k}" aria-selected="false">${z}<small>${e}</small></button>`).join('');
