@@ -42,7 +42,7 @@ main{padding-block:22px 60px}
 .g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
 .g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
 .g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
-.stack{display:grid;gap:14px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:grid;gap:14px;align-content:start}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .sub{font:700 14px var(--sans);color:var(--pd);margin:2px 0 8px;display:flex;gap:8px;align-items:center}
 .zhd{font:700 12px var(--sans);color:var(--mu);letter-spacing:.06em;margin-bottom:4px}
 .seg{display:inline-flex;flex-wrap:wrap;background:var(--s2);border:1px solid var(--ln);border-radius:10px;padding:3px;gap:2px;margin-bottom:12px}
@@ -540,11 +540,11 @@ function vDiscover(){
  let body='';
  if(!ivs.length)body=empty('還沒有訪談資料。','Interviews／Quotes');
  else{
-  if(!ST.empI||!ivs.some(i=>i.id===ST.empI))ST.empI=ivs[0].id;
-  const iv=ivs.find(i=>i.id===ST.empI);
-  body=seg('dsg',[['iv','訪談與 ORID'],['em','同理心地圖']],ST.ds)+seg('ivsg',ivs.map(i=>[i.id,i.id]),ST.empI)+
-  `<div class="card stack"><div><span class="cd t-I" style="cursor:default">${esc(iv.id)}</span> <b>${esc(iv.name)}</b> <span class="xs mu">${esc([iv.role,[iv.date,iv.place].filter(Boolean).join(' ')].filter(Boolean).join('｜'))}${iv.interviewer?'｜訪談者 '+esc(iv.interviewer):''}</span></div>`+
-  (ST.ds==='iv'?oridTxt(iv):vEmpathy(iv))+`</div>`}
+  if(!ST.empI||(ST.empI!=='all'&&!ivs.some(i=>i.id===ST.empI)))ST.empI=ivs[0].id;
+  const iv=ivs.find(i=>i.id===ST.empI)||ivs[0];
+  const one=iv=>`<div class="card stack"><div><span class="cd t-I" style="cursor:default">${esc(iv.id)}</span> <b>${esc(iv.name)}</b> <span class="xs mu">${esc([iv.role,[iv.date,iv.place].filter(Boolean).join(' ')].filter(Boolean).join('｜'))}${iv.interviewer?'｜訪談者 '+esc(iv.interviewer):''}</span></div><div class="sub">訪談與 ORID</div>${oridTxt(iv)}<div class="sub">同理心地圖</div>${vEmpathy(iv)}</div>`;
+  const list=ST.empI==='all'?ivs:[iv];
+  body=seg('ivsg',[['all','全部'],...ivs.map(i=>[i.id,i.id])],ST.empI)+`<div class="stack">${list.map(one).join('')}</div>`}
  $('#tab-discover').innerHTML=hero('DISCOVER · 發現','訪談與同理心','每筆原話都有編號（I-01.R2…）。同理心地圖的每張便利貼會標示來自哪一句原話，點編號可追溯。',null,true)+body}
 function vEmpathy(iv){const rows=rowsOf('Empathy').filter(r=>r.interview===iv.id);
  if(!rows.length)return`<div class="empty"><div>${esc(iv.id)} 還沒有同理心地圖資料。</div><div class="xs">請在 Empathy 工作表填入 interview=${esc(iv.id)} 的列（象限：說、想、看、聽、痛、得）。</div></div>`;
@@ -554,7 +554,8 @@ function vEmpathy(iv){const rows=rowsOf('Empathy').filter(r=>r.interview===iv.id
 function note(r,c){return`<div class="sn ${c||''}"><span>${esc(r.title)}</span><span class="xs">${cd(r.code)} ${cds(lc(r.src))}</span></div>`}
 function vAffinity(){const pn=rowsOf('Items').filter(r=>r.type==='PN'||r.type==='GN');
  if(!pn.length)return empty('還沒有痛點／收穫資料。','Items（PN／GN）');
- const groups={};pn.forEach(r=>{const g=r.cluster||'（未分群）';(groups[g]=groups[g]||[]).push(r)});
+ const CLZ={trust:'信任落差',gift:'送禮不確定',cook:'料理門檻',taste:'口味與品質風險',supply:'供給端限制',feedback:'回饋斷鏈',peak:'旺季失控',barrier:'導入門檻'};
+ const groups={};pn.forEach(r=>{const g=CLZ[String(r.cluster||'').toLowerCase()]||r.cluster||(r.type==='GN'?'收穫與期待（未分群）':'（未分群）');(groups[g]=groups[g]||[]).push(r)});
  return`<p class="xs mu" style="margin-bottom:8px">依 Items 的 <b>cluster</b> 欄分群；沒填的會放在「未分群」。</p><div class="g3">${Object.entries(groups).map(([g,a])=>`<div class="card w stack"><div class="sub">${esc(g)} <span class="badge">${a.length}</span></div>${a.map(r=>note(r,r.type==='GN'?'g':'r')).join('')}</div>`).join('')}</div>`}
 function vInsights(){const a=rowsOf('Items').filter(r=>r.type==='IN');if(!a.length)return empty('還沒有洞察資料。','Items（IN）');
  return`<div class="g2">${a.map(r=>`<div class="card w stack"><span>${cd(r.code)} <b>${esc(r.title)}</b></span>${r.desc?`<span class="sm mu">${esc(r.desc)}</span>`:''}<span class="xs">原話 ${cds(lc(r.src))} ${lc(r.from).length?'｜上游 '+cds(lc(r.from)):''}</span></div>`).join('')}</div>`}
@@ -585,7 +586,7 @@ function vJourney(){const ps=rowsOf('Personas').filter(p=>rowsOf('Journey').some
 function vDefine(){
  const sub={af:vAffinity,in:vInsights,pe:vPersona,jm:vJourney};
  $('#tab-define').innerHTML=hero('DEFINE · 定義','痛點、洞察、Persona 與旅程','依課程順序：先從原話歸納痛點與洞察，再依情境整合出顧客旅程，最後由旅程歸納 Persona。每個編號都能點開追溯來源。',null,true)+
- seg('dfsg',[['af','親和圖'],['in','洞察'],['jm','旅程 Journey'],['pe','Persona']],ST.df)+`<div id="dfbody">${sub[ST.df]()}</div>`}
+ `<div class="stack"><div><div class="sub">親和圖</div>${vAffinity()}</div><div><div class="sub">洞察</div>${vInsights()}</div><div><div class="sub">旅程 Journey</div>${vJourney()}</div><div><div class="sub">Persona</div>${vPersona()}</div></div>`}
 function vDevelop(){const G=[['OP','機會點 Opportunity'],['ID','構想 Idea'],['SV','服務 Service'],['HY','假說 Hypothesis（Deliver）']];
  const any=G.some(([t])=>rowsOf('Items').some(r=>r.type===t));
  $('#tab-develop').innerHTML=hero('DEVELOP · DELIVER','機會點、構想、服務與假說','以編碼清單呈現；每一筆都可追溯到上游的洞察與原話。價值主張圖、藍圖、BMC 等畫布不在專案模式內。',null,true)+
@@ -641,7 +642,7 @@ async function importFile(file,name){try{const buf=await file.arrayBuffer();cons
 
 /* ---------- 版本下拉與管理 ---------- */
 function drawVer(){const s=$('#verSel');if(!s)return;
- s.innerHTML=VER.list.map(v=>`<option value="${esc(v.id)}"${v.id===VER.cur?' selected':''}>${esc(v.name)}</option>`).join('')+'<option value="__new">＋ 新增版本…</option>';
+ s.innerHTML=[...VER.list].sort((a,b)=>{const r=v=>v.id==='sim'?0:(v.id==='sdl'||v.name==='SDL_App')?1:2;return r(a)-r(b)||(a.name<b.name?-1:a.name>b.name?1:0)}).map(v=>`<option value="${esc(v.id)}"${v.id===VER.cur?' selected':''}>${esc(v.name)}</option>`).join('')+'<option value="__new">＋ 新增版本…</option>';
  const p=$('#verInfo');if(p)p.textContent=verName()}
 function verModal(){modal(`<h2 style="margin:0 0 4px">新增版本</h2><div class="stack"><label class="xs mu">版本名稱<input id="vnm" class="vin" type="text" maxlength="30" placeholder="例如 ORID_2nd" autocomplete="off"></label>
  <label class="vopt"><input type="radio" name="vk" value="blank" checked> <span><b>空白版本</b><br><span class="xs mu">從空的專案開始，再用「上傳 Excel」匯入這一輪的資料（團隊資料會沿用）。</span></span></label>
@@ -696,7 +697,7 @@ async function init(){
  await bootVersions();
  await applyURLVer();
  bind();renderAll();showTab((location.hash||'').slice(1));
- if(ST_FIRST)setTimeout(()=>toast('已新增版本「'+ST_FIRST+'」，目前顯示的就是它；其他版本可從右上角「版本」切換。'),400)}
+ if(ST_FIRST&&!urlVerId())setTimeout(()=>toast('已新增版本「'+ST_FIRST+'」，目前顯示的就是它；其他版本可從右上角「版本」切換。'),400)}
 init();
 </script>
 </body>
