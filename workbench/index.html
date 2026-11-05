@@ -81,7 +81,7 @@ table.t{border-collapse:collapse;width:100%;font-size:13.5px}table.t th,table.t 
 .pcol{display:grid;gap:10px;justify-items:center;text-align:center;background:var(--ps);border-radius:14px;padding:18px 14px}
 .av{width:140px;height:140px;border-radius:50%;background:var(--s2);border:4px solid var(--s);box-shadow:0 0 0 2px var(--pri);overflow:hidden;position:relative;display:grid;place-items:center;color:var(--pri)}
 .av img{width:100%;height:100%;object-fit:cover}.av .sil{width:70%;height:70%}.av.sm{width:34px;height:34px;border-width:2px;box-shadow:0 0 0 1px var(--pri)}
-.upl{font-size:12.5px;border:1px dashed var(--pri);border-radius:8px;padding:4px 10px;color:var(--pd);cursor:pointer;background:var(--s)}.upl input{display:none}
+.evb{display:grid;gap:8px}.evf{margin:0;display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;border:1px solid var(--bd,#ddd);border-radius:10px;padding:8px;background:var(--s)}.evf img{width:96px;height:96px;object-fit:cover;border-radius:6px;cursor:zoom-in}.evadd{display:grid;gap:6px}.evadd input[type=text],.evadd select{font:inherit;padding:6px 8px;border:1px solid var(--bd,#ccc);border-radius:8px;background:var(--s);color:var(--fg);min-width:0;width:100%}.upl{font-size:12.5px;border:1px dashed var(--pri);border-radius:8px;padding:4px 10px;color:var(--pd);cursor:pointer;background:var(--s)}.upl input{display:none}
 .pf dl{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;margin:0}.pf dt{font-size:12.5px;color:var(--mu);font-weight:700}.pf dd{margin:0}
 .pf ul{margin:0;padding-left:18px}
 /* journey */
@@ -254,7 +254,7 @@ const colsOf=sh=>sh==='Skills'?['code','name',...SKCAPS,'status','batch']:SH[sh]
 function rebuildCaps(){const base=new Set(['code','name','status','batch']);const seen=[];Object.values(S.tables.Skills).forEach(r=>Object.keys(r).forEach(k=>{if(!base.has(k)&&!seen.includes(k))seen.push(k)}));SKCAPS=seen.concat(SKCAPS.filter(c=>!seen.includes(c)))}
 /* ---------- store ---------- */
 let S=newStore(),PREV=null;
-function newStore(){const t={};ORDER.forEach(k=>t[k]={});return{v:1,tables:t,photos:{},log:[]}}
+function newStore(){const t={};ORDER.forEach(k=>t[k]={});return{v:1,tables:t,photos:{},evid:{},log:[]}}
 const rowsOf=(sh,all)=>Object.values(S.tables[sh]).filter(r=>all||r.status==='有效').sort((a,b)=>nat(a[SH[sh].k],b[SH[sh].k]));
 const clone=o=>JSON.parse(JSON.stringify(o));
 function buildIndex(tables){const ix=new Map();ORDER.forEach(sh=>SH[sh].noidx||Object.values(tables[sh]).forEach(r=>ix.set(r[SH[sh].k],{sheet:sh,row:r})));return ix}
@@ -390,7 +390,7 @@ const SHARED=['Team','Skills','TeamInfo'];
 let VER={list:[],cur:'',seeded:[]};
 const verName=()=>{const v=VER.list.find(x=>x.id===VER.cur);return v?v.name:''};
 const verFile=()=>verName().replace(/[\\/:*?"<>|\s]+/g,'_')||'專案';
-function storeFrom(d){const s=newStore();if(d&&d.tables){ORDER.forEach(sh=>Object.assign(s.tables[sh],d.tables[sh]||{}));s.photos=d.photos||{};s.log=d.log||[]}return s}
+function storeFrom(d){const s=newStore();if(d&&d.tables){ORDER.forEach(sh=>Object.assign(s.tables[sh],d.tables[sh]||{}));s.photos=d.photos||{};s.evid=d.evid||{};s.log=d.log||[]}return s}
 function carryShared(from,to){SHARED.forEach(sh=>to.tables[sh]=clone(from.tables[sh]));Object.keys(to.photos).forEach(k=>{if(/^M-/.test(k))delete to.photos[k]});Object.entries(from.photos).forEach(([k,v])=>{if(/^M-/.test(k))to.photos[k]=v})}
 function buildFromBooks(list){const keep=S;S=newStore();try{list.forEach(([b64,name])=>{const wb=readWorkbook(b64buf(b64));apply(plan(wb,name))});const out=S;out.log=out.log.slice();return out}finally{S=keep;PREV=null}}
 async function flushStore(){await kvPut('ver:'+VER.cur,S);await kvPut('meta',VER)}
@@ -430,7 +430,10 @@ function exportXlsx(){const wb=XLSX.utils.book_new();
  ORDER.forEach(sh=>{const cols=colsOf(sh);const aoa=[cols,...rowsOf(sh,true).map(r=>cols.map(c=>{const v=r[c];return (c==='stage_no'||c==='feel'||c==='age'||(sh==='Skills'&&/^[1-5]$/.test(v)))&&/^\d+$/.test(v)?+v:v}))];
   const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=cols.map(c=>({wch:({text:60,desc:44,title:36,bg:44,jtbd:44,behaviors:44,do:36,think:30,quote:36,knowledge:44,experience:44,goal:44,interests:44,content:70}[c])||(sh==='Skills'&&c!=='code'&&c!=='name'&&c!=='status'&&c!=='batch'?16:14)}));XLSX.utils.book_append_sheet(wb,ws,sh)});
  XLSX.writeFile(wb,`ORID專案_${verFile()}_${stamp()}.xlsx`)}
-function exportPackage(){download(new Blob([JSON.stringify({format:'orid-workbench',v:1,exportedAt:new Date().toISOString(),tables:S.tables,photos:S.photos,log:S.log})],{type:'application/json'}),`ORID專案包_${verFile()}_${stamp()}.json`)}
+const EVT=['認證標章','養殖履歷','出貨記錄','售價／價目','檢驗報告','現場照片','其他'];
+function dlPhotos(){const ks=Object.keys(S.photos).filter(k=>/^P-?\d+/i.test(k));if(!ks.length){toast('目前沒有 Persona 照片');return}
+ ks.forEach((k,i)=>setTimeout(()=>{const u=S.photos[k],m=/^data:image\/(\w+)/.exec(u),ext=m?(m[1]==='jpeg'?'jpg':m[1]):'jpg';fetch(u).then(r=>r.blob()).then(b=>download(b,k+'.'+ext))},i*400));toast('已下載 '+ks.length+' 張，請放進 repo 的 workbench/photos/Persona_1.1st/')}
+function exportPackage(){download(new Blob([JSON.stringify({format:'orid-workbench',v:1,exportedAt:new Date().toISOString(),tables:S.tables,photos:S.photos,evid:S.evid||{},log:S.log})],{type:'application/json'}),`ORID專案包_${verFile()}_${stamp()}.json`)}
 function exportCsv(){const head=['code','type','type_zh','title','desc','status','src','from','referenced_by','merged_into','batch','sheet'];const rows=[];
  ORDER.forEach(sh=>SH[sh].noidx||rowsOf(sh,true).forEach(r=>{const k=r[SH[sh].k],t=typeOf(k),i=info(k);const rb=[...(REFBY.get(k)||[])].sort(nat).join(' ');
   rows.push([k,t,TN[t]||'',i.title,i.desc,r.status,r.src||r.interview||'',r.from||'',rb,r.merged_into||'',r.batch||'',sh])}));
@@ -519,9 +522,9 @@ function vProject(){
    <div class="row"><label class="btn"><input type="file" id="fk" accept=".json" hidden>還原專案包（取代目前版本）</label><button class="btn" id="bclr">清空專案</button></div>
   </div>
   <div class="card stack"><div class="sub">匯出</div>
-   <div class="row"><button class="btn pri" id="bxl">Excel 活頁簿</button><button class="btn" id="bpk">專案包（JSON＋照片）</button><button class="btn" id="bcs">證據庫 CSV</button></div>
+   <div class="row"><button class="btn pri" id="bxl">Excel 活頁簿</button><button class="btn" id="bpk">專案包（JSON＋照片＋佐證圖）</button><button class="btn" id="bph">下載 Persona 照片檔</button><button class="btn" id="bcs">證據庫 CSV</button></div>
    <p class="xs mu">Excel 與上傳範本同結構（含作廢列與批次欄），編輯後可直接再上傳。專案包含 Persona 照片與變更紀錄，適合備份、換電腦。各分頁上方另有「匯出本頁 PNG／PDF」。</p>
-   <p class="xs mu">資料只存在這台電腦的瀏覽器裡。換電腦或清除瀏覽資料前，請先匯出專案包。</p>
+   <p class="xs mu">資料（含照片與佐證圖片）只存在這台電腦的瀏覽器裡，清除快取／網站資料就會消失。請先匯出專案包；Persona 照片若要長期保存，用「下載 Persona 照片檔」放進 repo。</p>
   </div>
  </div>
  <div class="card"><div class="sub">各工作表資料量</div><div class="sc"><table class="t"><tr><th>工作表</th><th>說明</th><th>有效</th><th>作廢／併入</th><th>下一個可用編號</th></tr>
@@ -597,7 +600,7 @@ function drawDB(){const q=ST.dbq.trim().toLowerCase();const out=[];
  ORDER.forEach(sh=>rowsOf(sh,ST.dbr).forEach(r=>{const k=r[SH[sh].k],t=typeOf(k),i=info(k);if(ST.dbf!=='all'&&t!==ST.dbf)return;if(q&&!(k+i.title+i.desc).toLowerCase().includes(q))return;out.push({k,t,i,r})}));
  const grp={};out.forEach(o=>(grp[o.t]=grp[o.t]||[]).push(o));
  const order=['M','TI','I','Q','EM','P','J',...TYPES.map(x=>x[0])];
- $('#dblist').innerHTML=out.length?order.filter(t=>grp[t]).map(t=>`<div class="dbg"><h3>${TN[t]} ${t}・${grp[t].length}</h3>${grp[t].map(o=>`<button class="dbr ${o.r.status!=='有效'?'ret':''}" data-c="${esc(o.k)}"><span class="cd t-${t}">${esc(o.k)}</span><span class="t">${esc(o.i.title)}</span><span class="n">${o.r.status!=='有效'?`<span class="badge b-bad">${esc(o.r.status)}</span> `:''}被引用 ${(REFBY.get(o.k)||new Set()).size} 次</span></button>`).join('')}</div>`).join(''):'<p class="mu" style="margin-top:14px">找不到符合的資料。</p>'}
+ $('#dblist').innerHTML=out.length?order.filter(t=>grp[t]).map(t=>`<div class="dbg"><h3>${TN[t]} ${t}・${grp[t].length}</h3>${grp[t].map(o=>`<button class="dbr ${o.r.status!=='有效'?'ret':''}" data-c="${esc(o.k)}"><span class="cd t-${t}">${esc(o.k)}</span><span class="t">${esc(o.i.title)}</span><span class="n">${o.r.status!=='有效'?`<span class="badge b-bad">${esc(o.r.status)}</span> `:''}${((S.evid||{})[o.k]||[]).length?`<span class="badge">圖 ${S.evid[o.k].length}</span> `:''}被引用 ${(REFBY.get(o.k)||new Set()).size} 次</span></button>`).join('')}</div>`).join(''):'<p class="mu" style="margin-top:14px">找不到符合的資料。</p>'}
 function vLog(){const L=[...S.log].reverse();const c=o=>Object.entries(o||{}).map(([sh,a])=>`<div class="xs"><b class="mono">${sh}</b>：${a.map(cd).join('')}</div>`).join('');
  $('#tab-log').innerHTML=hero('HISTORY · 變更紀錄','每一次匯入都留下紀錄','誰在什麼時候匯入了什麼檔案、新增與修改了哪些編號。匯出專案包會一併帶出。')+
  (L.length?`<div class="stack">${L.map(e=>{const nn=Object.values(e.new).flat().length,cc=Object.values(e.chg).flat().length;return`<details><summary><span class="mono">${esc(e.id)}</span>　${esc(new Date(e.at).toLocaleString('zh-TW'))}　${esc(e.file)}　<span class="badge b-ok">新增 ${nn}</span> <span class="badge">修改 ${cc}</span>${e.retired.length?` <span class="badge b-bad">作廢 ${e.retired.length}</span>`:''}${e.warn?` <span class="badge b-warn">警示 ${e.warn}</span>`:''}</summary><div class="stack" style="margin-top:8px">${nn?`<div class="zhd">新增</div>${c(e.new)}`:''}${cc?`<div class="zhd">修改</div>${c(e.chg)}`:''}${e.retired.length?`<div class="zhd">作廢／併入</div><div>${e.retired.map(cd).join('')}</div>`:''}</div></details>`}).join('')}</div>`:'<div class="empty">還沒有匯入紀錄。</div>')}
@@ -611,6 +614,10 @@ function trace(code,depth,seen){const h=IX.get(code);if(!h)return`<li>${cd(code)
  if(seen.has(code))return`<li>${cd(code)} <span class="xs mu">（已出現）</span></li>`;seen.add(code);const i=info(code);
  const up=[...lc(h.row.src),...lc(h.row.from),...(h.sheet==='Quotes'||h.sheet==='Empathy'?[h.row.interview]:[])].filter(x=>x&&x!==code);
  return`<li>${cd(code)} <span class="xs">${esc(i.title).slice(0,70)}</span>${depth<5&&up.length?`<ul>${up.map(c=>trace(c,depth+1,seen)).join('')}</ul>`:''}</li>`}
+function evBlock(c){S.evid=S.evid||{};const L=S.evid[c]||[];
+ return`<div class="evb"><div class="zhd">佐證圖片 <span class="badge">${L.length}</span></div>${L.map((e,i)=>`<figure class="evf"><img src="${e.img}" alt="${esc(e.cap)}" data-evz="${esc(c)}|${i}"><figcaption><span class="badge">${esc(e.type)}</span> <b class="sm">${esc(e.cap||'（未命名）')}</b>${e.note?`<div class="xs mu">${esc(e.note)}</div>`:''}<div class="xs mu">${esc((e.at||'').slice(0,10))}</div><button class="btn" data-evd="${esc(c)}|${i}" data-noexp>刪除</button></figcaption></figure>`).join('')}
+ <div class="evadd" data-noexp><select id="evt">${EVT.map(x=>`<option>${x}</option>`).join('')}</select><input id="evc" type="text" placeholder="說明（例：農委會產銷履歷 2026）" maxlength="80"><input id="evn" type="text" placeholder="備註：來源、日期、數字（選填）" maxlength="160"><label class="upl"><input type="file" accept="image/*" multiple data-evup="${esc(c)}">＋ 上傳佐證圖片</label></div>
+ <p class="xs mu">圖片只存在這台電腦的瀏覽器；請定期匯出專案包備份。</p></div>`}
 function openC(c){const h=IX.get(c);const t=typeOf(c)||'I';
  if(!h){$('#db_').innerHTML=`<div><span class="cd t-${t} miss" style="cursor:default">${esc(c)}</span></div><h3>尚未匯入（待補來源）</h3><p class="sm mu">有項目引用了這個編號，但專案裡還沒有它。請在對應的工作表補上這一列再上傳。</p><div><div class="zhd">被這些項目引用</div>${cds([...(REFBY.get(c)||[])].sort(nat))}</div>`;$('#drw').hidden=false;return}
  const r=h.row,i=info(c),rb=[...(REFBY.get(c)||[])].sort(nat);
@@ -620,6 +627,7 @@ function openC(c){const h=IX.get(c);const t=typeOf(c)||'I';
  <div class="pf"><dl style="grid-template-columns:90px minmax(0,1fr)">${fields}</dl></div>
  <div class="tr"><div class="zhd">來源追溯（往上）</div><ul style="border:0;padding:0">${trace(c,0,new Set())}</ul></div>
  <div><div class="zhd">被這些項目引用（往下）</div>${rb.length?cds(rb):'<span class="xs mu">還沒有人引用</span>'}</div>
+ ${evBlock(c)}
  <p class="xs mu">批次 ${esc(r.batch||'—')}</p>`;$('#drw').hidden=false;$('#dx').focus()}
 
 /* ---------- import preview ---------- */
@@ -661,6 +669,8 @@ function bind(){
  document.addEventListener('click',async e=>{
   const T=e.target.closest('#tabs button');if(T)return showTab(T.dataset.t);
   if(e.target.id==='bteam')return importFile(new File([b64buf(B64.team)],'內建團隊資料.xlsx'));
+  const ed=e.target.closest('[data-evd]');if(ed){const[c,i]=ed.dataset.evd.split('|');if(!await ask('刪除這張佐證圖片？','刪除'))return;S.evid[c].splice(+i,1);if(!S.evid[c].length)delete S.evid[c];saveStore();openC(c);if($('#dblist'))drawDB();return}
+  const ez=e.target.closest('[data-evz]');if(ez){const[c,i]=ez.dataset.evz.split('|'),x=S.evid[c][+i];modal(`<h2>${esc(x.cap)}</h2><p class="xs mu"><span class="badge">${esc(x.type)}</span> ${esc(c)}　${esc(x.note||'')}</p><img src="${x.img}" alt="${esc(x.cap)}" style="max-width:100%;height:auto;border-radius:8px">`);return}
   const sb=e.target.closest('[data-showtab]');if(sb)return showTab(sb.dataset.showtab);
   if(e.target.closest('[data-closem]')||e.target.id==='mdl')return closeModal();
   if(e.target.id==='drw'||e.target.id==='dx'){$('#drw').hidden=true;return}
@@ -676,14 +686,16 @@ function bind(){
   if(id==='bsmp'){if(ORDER.some(sh=>Object.keys(S.tables[sh]).length)&&!await ask('範例資料會以「合併」方式加入目前專案（編號相同的列會被範例內容更新）。要繼續嗎？','繼續載入'))return;return importFile(new File([b64buf(B64.sample)],'範例_烏金預約.xlsx'))}
   if(id==='bundo'){if(undo()){saveStore();renderAll();toast('已復原上一次匯入')}return}
   if(id==='bclr'){if(await ask('這會清空目前版本「'+esc(verName())+'」的所有資料與照片（無法復原；其他版本不受影響）。建議先匯出專案包備份。確定清空嗎？','清空')){S=newStore();PREV=null;saveStore();renderAll();toast('已清空專案')}return}
-  if(id==='bxl')return exportXlsx();if(id==='bpk')return exportPackage();if(id==='bcs')return exportCsv();
+  if(id==='bxl')return exportXlsx();if(id==='bpk')return exportPackage();if(id==='bph')return dlPhotos();if(id==='bcs')return exportCsv();
   if(id==='bcp'){const ta=$('#aita');try{await navigator.clipboard.writeText(ta.value);toast('已複製提示詞')}catch(err){ta.select();toast('請按 Ctrl+C 複製')}return}
  });
  document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='fx'&&t.files[0]){await importFile(t.files[0]);t.value=''}
   else if(t.id==='fp'&&t.files.length){const r=await addPhotos([...t.files]);t.value='';saveStore();renderAll();toast(`已對應 ${r.ok.length} 張照片${r.miss.length?`；未對應：${r.miss.join('、')}`:''}`)}
-  else if(t.id==='fk'&&t.files[0]){try{const d=JSON.parse(await t.files[0].text());if(d.format!=='orid-workbench')throw new Error('不是 ORID 專案包');if(!await ask('這會用專案包取代目前專案的所有資料。確定還原嗎？','還原'))return;S=newStore();ORDER.forEach(sh=>Object.assign(S.tables[sh],(d.tables||{})[sh]||{}));S.photos=d.photos||{};S.log=d.log||[];PREV=null;saveStore();renderAll();toast('已還原專案包')}catch(err){toast('專案包讀取失敗：'+err.message)}t.value=''}
+  else if(t.id==='fk'&&t.files[0]){try{const d=JSON.parse(await t.files[0].text());if(d.format!=='orid-workbench')throw new Error('不是 ORID 專案包');if(!await ask('這會用專案包取代目前專案的所有資料。確定還原嗎？','還原'))return;S=newStore();ORDER.forEach(sh=>Object.assign(S.tables[sh],(d.tables||{})[sh]||{}));S.photos=d.photos||{};S.evid=d.evid||{};S.log=d.log||[];PREV=null;saveStore();renderAll();toast('已還原專案包')}catch(err){toast('專案包讀取失敗：'+err.message)}t.value=''}
   else if(t.id==='fpt'&&t.files.length){const r=await addPhotos([...t.files]);t.value='';saveStore();renderAll();toast(`已對應 ${r.ok.length} 張照片${r.miss.length?`；未對應：${r.miss.join('、')}`:''}`)}
+  else if(t.dataset&&t.dataset.evup&&t.files[0]){const c=t.dataset.evup;S.evid=S.evid||{};const ty=$('#evt').value,cap=$('#evc').value.trim(),nt=$('#evn').value.trim();let n=0;for(const f of t.files){if(!/^image\//.test(f.type)||f.size>20e6)continue;try{const img=await resizeImg(f,1400);(S.evid[c]=S.evid[c]||[]).push({id:'EV-'+Date.now().toString(36)+n,type:ty,cap:cap||f.name.replace(/\.[^.]+$/,''),note:nt,img,at:new Date().toISOString()});n++}catch(e){}}
+   if(n){S.log.push({id:'B-'+String(S.log.length+1).padStart(3,'0'),at:new Date().toISOString(),file:'佐證圖片',kind:'evidence',new:{},chg:{},retired:[],warn:0,err:0});saveStore();openC(c);if(typeof drawDB==='function'&&ST.dbf!==undefined&&$('#dblist'))drawDB();toast('已加入 '+n+' 張佐證圖片')}else toast('請選擇圖片檔（20MB 以內）');t.value=''}
   else if(t.dataset&&(t.dataset.up||t.dataset.tup)&&t.files[0]){t.dataset.up=t.dataset.up||t.dataset.tup;const f=t.files[0];if(!/^image\//.test(f.type)){toast('請選擇圖片檔');return}S.photos[t.dataset.up]=await resizeImg(f);S.log.push({id:'B-'+String(S.log.length+1).padStart(3,'0'),at:new Date().toISOString(),file:'照片',kind:'photo',new:{},chg:{[/^M-/.test(t.dataset.up)?'Team':'Personas']:[t.dataset.up]},retired:[],warn:0,err:0});saveStore();renderAll();toast('已更新照片')}
   else if(t.id==='verSel'){if(t.value==='__new'){drawVer();verModal()}else{await switchVer(t.value);toast('已切換到「'+verName()+'」')}}
   else if(t.id==='aish'){ST.aiSheet=t.value;$('#aita').value=aiPrompt(ST.aiSheet)}
