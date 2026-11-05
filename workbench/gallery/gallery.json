@@ -10,7 +10,7 @@
                   ],
         "file":  "合影（漁會／漁民）/Media (70).jpg",
         "at":  "2026-11-05T17:23:45.5748186+08:00",
-        "thumb":  "_thumbs/合影（漁會／漁民）__Media (70).jpg.jpg"
+        "thumb":  "thumbs/合影（漁會／漁民）__Media (70).jpg.jpg"
     },
     {
         "id":  "G-021a4b2c",
@@ -23,7 +23,7 @@
                   ],
         "file":  "現場照片/Media (67).jpg",
         "at":  "2026-11-05T17:23:45.7472302+08:00",
-        "thumb":  "_thumbs/現場照片__Media (67).jpg.jpg"
+        "thumb":  "thumbs/現場照片__Media (67).jpg.jpg"
     },
     {
         "id":  "G-a721d906",
@@ -36,7 +36,7 @@
                   ],
         "file":  "現場照片/Media (69).jpg",
         "at":  "2026-11-05T17:23:45.8341011+08:00",
-        "thumb":  "_thumbs/現場照片__Media (69).jpg.jpg"
+        "thumb":  "thumbs/現場照片__Media (69).jpg.jpg"
     },
     {
         "id":  "G-8bb0f622",
@@ -49,7 +49,7 @@
                   ],
         "file":  "現場照片/Media (71).jpg",
         "at":  "2026-11-05T17:23:45.9211595+08:00",
-        "thumb":  "_thumbs/現場照片__Media (71).jpg.jpg"
+        "thumb":  "thumbs/現場照片__Media (71).jpg.jpg"
     },
     {
         "id":  "G-48d65a21",
@@ -62,7 +62,7 @@
                   ],
         "file":  "現場照片/Media (72).jpg",
         "at":  "2026-11-05T17:23:46.0042417+08:00",
-        "thumb":  "_thumbs/現場照片__Media (72).jpg.jpg"
+        "thumb":  "thumbs/現場照片__Media (72).jpg.jpg"
     },
     {
         "id":  "G-ce347117",
@@ -75,6 +75,6 @@
                   ],
         "file":  "現場照片/Media.jpg",
         "at":  "2026-11-05T17:23:46.0819460+08:00",
-        "thumb":  "_thumbs/現場照片__Media.jpg.jpg"
+        "thumb":  "thumbs/現場照片__Media.jpg.jpg"
     }
 ]
